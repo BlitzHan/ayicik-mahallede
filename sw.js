@@ -1,5 +1,5 @@
 // Çevrimdışı oynamak için: önce ağ, ağ yoksa önbellek. Sürüm değişince eski önbellek silinir.
-const CACHE = 'ayi-v7';
+const CACHE = 'ayi-v8';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'icerik/icerik.json',
   'css/oyun.css', 'css/bulmaca.css', 'css/panel.css',

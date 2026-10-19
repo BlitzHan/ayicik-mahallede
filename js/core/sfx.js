@@ -1,4 +1,4 @@
-// Prosedürel ses: efektler ve döngülü müzik. Ses dosyası yok, kütüphane yok.
+// Ses: efektler önce ses dosyasından (Kenney CC0, ses/efekt/*.m4a), yoksa prosedürel; döngülü müzik.
 // Web Audio yoksa her çağrı sessizce hiçbir şey yapmaz.
 
 let ctx = null, master = null, sfxBus = null, musicBus = null;
@@ -16,6 +16,31 @@ function ensure() {
     musicBus = ctx.createGain(); musicBus.gain.value = vol.music; musicBus.connect(master);
   } catch (_) { ctx = null; }
   return ctx;
+}
+
+// Kaydedilmiş efektler: ilk dokunuşta yüklenir; yüklenemeyen ad prosedürel sese düşer
+const DOSYA = { jump: ['jump'], land: ['land'], coin: ['coin'], star: ['star'], yes: ['yes'], no: ['no'], pop: ['pop'],
+  step: ['step0', 'step1', 'step2', 'step3'], open: ['open'], whoosh: ['whoosh'], bounce: ['bounce'] };
+const KAZANC = { step: 0.35, land: 0.5, coin: 0.6, jump: 0.55 };
+const tampon = {};
+let yuklendi = false;
+function yukle() {
+  if (yuklendi || !ctx) return; yuklendi = true;
+  const kok = new URL('../../ses/efekt/', import.meta.url);
+  for (const [ad, dosyalar] of Object.entries(DOSYA)) {
+    Promise.all(dosyalar.map(f => fetch(new URL(f + '.m4a', kok)).then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+      .then(b => new Promise((ok, no) => ctx.decodeAudioData(b, ok, no)))))
+      .then(list => { tampon[ad] = list; }).catch(() => {});
+  }
+}
+function calDosya(name, t) {
+  const list = tampon[name]; if (!list) return false;
+  const src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = list[Math.floor(Math.random() * list.length)];
+  src.playbackRate.value = 0.96 + Math.random() * 0.08;   // her seferinde hafif farklı
+  g.gain.value = KAZANC[name] ?? 0.8;
+  src.connect(g); g.connect(sfxBus); src.start(t);
+  return true;
 }
 
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -156,16 +181,16 @@ export const sfx = {
       const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
       s.buffer = b; s.connect(ctx.destination); s.start(0);
     } catch (_) {}
-    unlocked = true;
+    unlocked = true; yukle();
     if (wantedMusic && !track) sfx.music(wantedMusic);
   },
   play(name) {
-    if (!ctx || !unlocked || !EFEKT[name]) return;
+    if (!ctx || !unlocked || (!EFEKT[name] && !tampon[name])) return;
     try {
       const now = ctx.currentTime;
       if (MIN_GAP[name] && now - (lastPlay[name] || -1) < MIN_GAP[name]) return;
       lastPlay[name] = now;
-      EFEKT[name](now + 0.005);
+      if (!calDosya(name, now + 0.005)) EFEKT[name]?.(now + 0.005);
     } catch (_) {}
   },
   music(name) {
