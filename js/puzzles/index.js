@@ -181,10 +181,10 @@ function oturumAc(def, tur, ctx, kapanis) {
   }
 
   function ovguMetni() {
-    if (typeof def.odul === 'string' && def.odul.trim()) return [adEkle(def.odul, ad), {}];
+    if (typeof def.odul === 'string' && def.odul.trim()) return [adEkle(def.odul, ad), { alt: def.odul.trim() }];
     const i = Math.floor(Math.random() * OVGULER.length);
     const m = OVGULER[i];
-    return [ad ? m.replace('!', ` ${ad}!`) : m, { key: `aferin-${i + 1}` }];
+    return [ad ? m.replace('!', ` ${ad}!`) : m, { key: `aferin-${i + 1}`, alt: m }];
   }
 
   function basari(hedef, onSoz = []) {

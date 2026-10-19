@@ -1,4 +1,4 @@
-// Konuşma: ebeveynin kaydettiği ses varsa onu, yoksa tr-TR konuşma sentezini kullanır.
+// Konuşma: ebeveyn kaydı → önceden üretilmiş doğal ses → cihazın tr-TR sentezi.
 import { store } from './store.js';
 
 let current = null;      // çalan <audio> ya da utterance
@@ -19,38 +19,141 @@ if ('speechSynthesis' in window) {
   speechSynthesis.addEventListener?.('voiceschanged', pickVoice);
 }
 
+// --- Önceden üretilmiş doğal ses (Edge nöral TTS) ---
+// Sıra: ebeveyn kaydı (key) → üretilmiş klip (profil, yoksa anlatici) → cihaz TTS.
+// Liste göreli URL ile yüklenir (GitHub Pages alt yolunda da çalışır).
+const KLIP_TABAN = new URL('../../ses/konusma/', import.meta.url);
+let liste = null;
+let listeSoz = null;
+function listeYukle() {
+  listeSoz ??= fetch(new URL('liste.json', KLIP_TABAN))
+    .then(r => (r.ok ? r.json() : null)).then(j => (liste = j)).catch(() => null);
+  return listeSoz;
+}
+listeYukle();
+
+const norm = t => String(t ?? '').replace(/\s+/g, ' ').trim();
+
+// NPC'nin ses profili (liste.json "npc" eşlemesi); bilinmiyorsa anlatici.
+export function npcVoice(id) { return liste?.npc?.[id] || 'anlatici'; }
+
+function klipYolu(t, voice) {
+  const k = liste?.klipler;
+  if (!k || !t) return null;
+  return k[voice]?.[t] || k.anlatici?.[t] || null;
+}
+// Metin → klip yolları. Bütün metin yoksa ". " ile bölünmüş parçaların hepsi aranır (eşleştirme seslerinde).
+function cozumle(text, voice, alt) {
+  voice = voice || 'anlatici';
+  for (const c of [norm(text), alt ? norm(alt) : '']) {
+    if (!c) continue;
+    const y = klipYolu(c, voice);
+    if (y) return [y];
+    const parcalar = c.split(/\.\s+/).map(x => x.trim()).filter(Boolean);
+    if (parcalar.length > 1) {
+      const ys = parcalar.map(x => klipYolu(x, voice) || klipYolu(x + '.', voice));
+      if (ys.every(Boolean)) return ys;
+    }
+  }
+  return null;
+}
+
+const blobOnbellek = new Map();
+function klipBlob(rel) {
+  let p = blobOnbellek.get(rel);
+  if (!p) {
+    p = fetch(new URL(rel, KLIP_TABAN)).then(r => { if (!r.ok) throw new Error('klip'); return r.blob(); });
+    p.catch(() => blobOnbellek.delete(rel));
+    blobOnbellek.set(rel, p);
+  }
+  return p;
+}
+// Bir sonraki konuşmayı önceden indir (isteğe bağlı).
+export async function preload(text, { voice, alt } = {}) {
+  await listeYukle();
+  (cozumle(text, voice, alt) || []).forEach(y => klipBlob(y).catch(() => {}));
+}
+
+// iOS: tek bir yeniden kullanılan <audio>; ilk dokunuşta açılır.
+const el = new Audio();
+el.preload = 'auto';
+let sesAcik = false;
+let bekleyen = null;     // çalan klibin bitiş çözücüsü
+const SESSIZ = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=';
+
 export function unlockAudio() {
   // iOS konuşma sentezini ilk dokunuşta açar.
-  if (!('speechSynthesis' in window)) return;
-  try {
-    const u = new SpeechSynthesisUtterance(' ');
-    u.volume = 0;
-    speechSynthesis.speak(u);
-  } catch (_) {}
-  if (!voicesReady) pickVoice();
+  if ('speechSynthesis' in window) {
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+    } catch (_) {}
+    if (!voicesReady) pickVoice();
+  }
+  if (!sesAcik) {
+    sesAcik = true;
+    try {
+      el.src = SESSIZ;
+      el.play().then(() => { if (el.src === SESSIZ) el.pause(); }).catch(() => {});
+    } catch (_) {}
+  }
 }
 
 export function stopSpeak() {
-  if (current instanceof HTMLAudioElement) { current.pause(); current = null; }
+  try { el.pause(); } catch (_) {}
+  const b = bekleyen; bekleyen = null;
+  if (b) b();
+  current = null;
   if ('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
-async function playClip(keys) {
+// Paylaşılan <audio> ile bir url'yi çalar; bitince (ya da durdurulunca) çözülür.
+function oynatUrl(url) {
+  return new Promise(resolve => {
+    let bitti = false, zt;
+    const fin = () => {
+      if (bitti) return; bitti = true; clearTimeout(zt);
+      el.onended = el.onerror = null;
+      if (bekleyen === fin) bekleyen = null;
+      resolve();
+    };
+    bekleyen = fin;
+    el.onended = el.onerror = fin;
+    zt = setTimeout(fin, 20000);
+    el.src = url;
+    el.play().catch(fin);
+  });
+}
+
+let seq = 0;   // en yeni konuşma çağrısı; eskileri iptal eder
+
+async function playClip(keys, my) {
   let blob = null;
   for (const key of [].concat(keys || [])) {   // anahtar ya da öncelik sırasıyla anahtar listesi
     try { blob = await store.getClip(key); } catch (_) {}
     if (blob) break;
   }
   if (!blob) return false;
+  if (my !== seq) return true;                  // araya yeni konuşma girdi
   const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  current = audio;
-  await new Promise(resolve => {
-    audio.onended = audio.onerror = resolve;
-    audio.play().catch(resolve);
-  });
+  await oynatUrl(url);
   URL.revokeObjectURL(url);
-  if (current === audio) current = null;
+  return true;
+}
+
+async function playGenerated(text, voice, alt, my) {
+  await listeYukle();
+  const yollar = cozumle(text, voice, alt);
+  if (!yollar) return false;
+  let blobs;
+  try { blobs = await Promise.all(yollar.map(klipBlob)); } catch (_) { return false; }
+  for (const b of blobs) {
+    if (my !== seq) return true;
+    const url = URL.createObjectURL(b);
+    await oynatUrl(url);
+    URL.revokeObjectURL(url);
+  }
   return true;
 }
 
@@ -81,10 +184,13 @@ function caption(text) {
   captionEl.classList.toggle('acik', !!text);
 }
 
-export async function speak(text, { key } = {}) {
+// text: söylenecek metin (çocuğun adı olabilir). alt: adsız sürüm (üretilmiş klip için).
+export async function speak(text, { key, voice, alt } = {}) {
+  const my = ++seq;
   stopSpeak();
   caption(text);
-  const played = await playClip(key);
-  if (!played) await tts(text);
-  caption('');
+  let ok = await playClip(key, my);
+  if (!ok && my === seq) ok = await playGenerated(text, voice, alt, my);
+  if (!ok && my === seq) await tts(text);
+  if (my === seq) caption('');
 }

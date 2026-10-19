@@ -148,7 +148,7 @@ let track = null;       // {def, bus, step, next}
 let schedTimer = null;
 
 function scheduleTrack() {
-  if (!ctx || !track) return;
+  if (!ctx || !track || !track.def) return;   // dosyadan çalan parçanın zamanlayıcısı yok
   const d = track.def, stepDur = 60 / d.bpm / 2;
   while (track.next < ctx.currentTime + 0.15) {
     const i = track.step % 32, t = track.next;
@@ -172,6 +172,33 @@ function startScheduler() {
 }
 
 let wantedMusic = null;
+
+// Bölge müzikleri (OpenGameArt CC0, ses/muzik/*.m4a); yoksa prosedürel parça çalar
+const MUZIK = { baslik: 'baslik', mahalle: 'mahalle', okul: 'okul', cami: 'cami' };
+const MUZIK_KAZANC = { baslik: 0.55, mahalle: 0.5, okul: 0.45, cami: 0.5 };
+const muzikTampon = {};
+function muzikYukle(name) {
+  if (!muzikTampon[name]) {
+    muzikTampon[name] = fetch(new URL(`../../ses/muzik/${MUZIK[name]}.m4a`, import.meta.url))
+      .then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+      .then(b => new Promise((ok, no) => ctx.decodeAudioData(b, ok, no)))
+      .catch(() => null);
+  }
+  return muzikTampon[name];
+}
+
+function prosedurel(name) {
+  if (!PARCALAR[name]) return;
+  const now = ctx.currentTime;
+  try {
+      const bus = ctx.createGain();
+      bus.gain.setValueAtTime(0.0001, now);
+      bus.gain.linearRampToValueAtTime(1, now + 0.8);
+      bus.connect(musicBus);
+      track = { name, def: PARCALAR[name], bus, step: 0, next: now + 0.1 };
+      startScheduler();
+    } catch (_) {}
+}
 
 export const sfx = {
   unlock() {
@@ -200,19 +227,27 @@ export const sfx = {
     try {
       const now = ctx.currentTime;
       if (track) {   // eski parçayı yumuşakça kıs
-        const old = track.bus;
+        const old = track.bus, oldSrc = track.src;
+        if (oldSrc) setTimeout(() => { try { oldSrc.stop(); } catch (_) {} }, 900);
         old.gain.setValueAtTime(old.gain.value, now);
         old.gain.linearRampToValueAtTime(0.0001, now + 0.6);
         setTimeout(() => { try { old.disconnect(); } catch (_) {} }, 900);
         track = null;
       }
-      if (!name || !PARCALAR[name]) return;
-      const bus = ctx.createGain();
-      bus.gain.setValueAtTime(0.0001, now);
-      bus.gain.linearRampToValueAtTime(1, now + 0.8);
-      bus.connect(musicBus);
-      track = { name, def: PARCALAR[name], bus, step: 0, next: now + 0.1 };
-      startScheduler();
+      if (!name) return;
+      if (MUZIK[name]) {
+        const bus = ctx.createGain(); bus.gain.value = 0.0001; bus.connect(musicBus);
+        const tr = { name, bus, src: null }; track = tr;
+        muzikYukle(name).then(buf => {
+          if (track !== tr) return;   // bu arada başka parçaya geçildi
+          if (!buf) { track = null; bus.disconnect(); if (PARCALAR[name]) { const w = wantedMusic; wantedMusic = null; prosedurel(name); wantedMusic = w; } return; }
+          const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(bus);
+          const t = ctx.currentTime; src.start(t + 0.05); tr.src = src;
+          bus.gain.setValueAtTime(0.0001, t); bus.gain.linearRampToValueAtTime(MUZIK_KAZANC[name] ?? 0.5, t + 1.2);
+        });
+        return;
+      }
+      prosedurel(name);
     } catch (_) {}
   },
   setVolume(s, m) {

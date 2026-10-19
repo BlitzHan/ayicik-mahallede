@@ -1,7 +1,7 @@
 // Ayıcık Mahallede — çekirdek: başlık ekranı, oyun döngüsü, etkileşimler, ödüller.
 import * as THREE from 'three';
 import { store, loadBaseContent } from './core/store.js';
-import { speak, stopSpeak, unlockAudio } from './core/speech.js';
+import { speak, stopSpeak, unlockAudio, npcVoice } from './core/speech.js';
 import { sfx } from './core/sfx.js';
 import { normalizeContent } from './core/content.js';
 import { createInput } from './engine/input.js';
@@ -176,7 +176,7 @@ async function startGame() {
   import('./puzzles/index.js').catch(() => {});
   try { renderer.compile(scene, camera); } catch (_) {}
   prebuildFriends();
-  await speak(`Hoş geldin ${childName()}!`, { key: [`hosgeldin:${prof().id}`, 'hosgeldin'] });
+  await speak(`Hoş geldin ${childName()}!`, { key: [`hosgeldin:${prof().id}`, 'hosgeldin'], alt: 'Hoş geldin!' });
   if (!progress().ogretici) tutorial();
 }
 
@@ -364,27 +364,28 @@ async function talkTo(n) {
   sfx.play('talk');
   const pr = progress();
   const key = i => `npc:${n.def.id}:${i}`;
+  const voice = npcVoice(n.def.id);   // NPC'nin ses profili
   try {
     if (n.active?.done) {
       // Görev teslim
       const g = n.active.gorev;
       n.active = null;
-      await speak(g.odul || 'Teşekkür ederim!');
+      await speak(g.odul || 'Teşekkür ederim!', { voice });
       await completeTask(n, g);
     } else if (n.active) {
       const left = n.active.need - n.active.got;
-      await speak(`${cap(SAYI[left] || String(left))} tane daha bulmalısın. Hadi!`);
+      await speak(`${cap(SAYI[left] || String(left))} tane daha bulmalısın. Hadi!`, { voice });
     } else {
       const g = pickTask(n);
       if (g) {
         // İlk konuşmada selam
-        if (n.def.konusmalar?.length && n.line === 0) { await speak(n.def.konusmalar[0], { key: key(0) }); n.line = 1; }
-        await speak(g.anlatim || 'Bana yardım eder misin?', { key: `gorev:${g.id}` });
+        if (n.def.konusmalar?.length && n.line === 0) { await speak(n.def.konusmalar[0], { key: key(0), voice }); n.line = 1; }
+        await speak(g.anlatim || 'Bana yardım eder misin?', { key: `gorev:${g.id}`, voice });
         await startTask(n, g);
       } else {
         const lines = n.def.konusmalar?.length ? n.def.konusmalar : ['Merhaba!'];
         const i = n.line % lines.length; n.line++;
-        await speak(lines[i], { key: key(i) });
+        await speak(lines[i], { key: key(i), voice });
       }
     }
   } finally {
@@ -410,8 +411,9 @@ async function startTask(n, g) {
   const def = (g.hedef?.bulmaca && content.bulmacalar.find(b => b.id === g.hedef.bulmaca)) || pickPuzzle(regionById(n.region).alan);
   if (!def) { await completeTask(n, g); return; }
   const res = await runPuzzle(def);
-  if (res.solved) { await speak(g.odul || 'Teşekkür ederim!'); await completeTask(n, g); }
-  else await speak('Sonra yine gel, birlikte çözeriz.');
+  const voice = npcVoice(n.def.id);
+  if (res.solved) { await speak(g.odul || 'Teşekkür ederim!', { voice }); await completeTask(n, g); }
+  else await speak('Sonra yine gel, birlikte çözeriz.', { voice });
 }
 
 async function completeTask(n, g) {
@@ -506,8 +508,8 @@ async function awardStar(id, at) {
     updateHud(true);
     updateGates();            // köprü sayacı hemen güncellensin
     refreshStones(); refreshMarkers();
-    const name = childName();
-    await speak(`${pick(OVGU)} ${name}! Bir yıldız kazandın!`, { key: `aferin-${1 + Math.floor(Math.random() * 3)}` });
+    const name = childName(), ov = pick(OVGU);
+    await speak(`${ov} ${name}! Bir yıldız kazandın!`, { key: `aferin-${1 + Math.floor(Math.random() * 3)}`, alt: `${ov}! Bir yıldız kazandın!` });
     // Aile mesajı
     const msgs = (content.aileMesajlari || []).filter(m => m && m.metin);
     if (msgs.length) {

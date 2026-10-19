@@ -1,5 +1,5 @@
 // Çevrimdışı oynamak için: önce ağ, ağ yoksa önbellek. Sürüm değişince eski önbellek silinir.
-const CACHE = 'ayi-v8';
+const CACHE = 'ayi-v9';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'icerik/icerik.json',
   'css/oyun.css', 'css/bulmaca.css', 'css/panel.css',
@@ -21,7 +21,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).then(res => {
+    // Yeni sürümle eski dosyalar karışmasın: tarayıcı önbelleği yerine sunucuya sorarak tazele
+    (e.request.mode === 'navigate' ? fetch(e.request) : fetch(e.request, { cache: 'no-cache' })).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
       return res;
     }).catch(() => caches.match(e.request, { ignoreSearch: true }))
