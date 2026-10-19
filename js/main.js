@@ -1,7 +1,7 @@
 // Ayıcık Mahallede — çekirdek: başlık ekranı, oyun döngüsü, etkileşimler, ödüller.
 import * as THREE from 'three';
 import { store, loadBaseContent } from './core/store.js';
-import { speak, stopSpeak, unlockAudio, npcVoice } from './core/speech.js';
+import { speak, stopSpeak, unlockAudio, npcVoice, isSpeaking } from './core/speech.js';
 import { sfx } from './core/sfx.js';
 import { normalizeContent } from './core/content.js';
 import { createInput } from './engine/input.js';
@@ -22,6 +22,17 @@ const KOSTUMLER = [
   { altin: 110, ad: 'tac', emoji: '👑', soz: 'Altın taç kazandın!' },
   { altin: 160, ad: 'kask', emoji: '⛑️', soz: 'Yeşil kask kazandın!' },
 ];
+// Bölge girişinde söylenen hedef cümlesi
+const BOLGE_GIRIS = {
+  mahalle: 'Mahalle! Ünlemli arkadaşlarla konuş, onlara yardım et, yıldız topla.',
+  okul: 'Okul bahçesi! Öğretmenle konuş, bulmacaları çöz, arkadaşlarına yardım edip yıldız topla.',
+  cami: 'Cami bahçesi! Dede ile konuş, güvercinlere ve kediye yardım et, yıldız topla.',
+  sahil: 'Sahil! Simitçi ve çaycı ile konuş, vapura bak, yıldız topla.',
+};
+// Toplama görevlerinde eşya adı (icerik'te hedef.ad yoksa emojiden)
+const ESYA_AD = { '🍎': 'elma', '🌷': 'çiçek', '✏️': 'kalem', '⚽': 'top', '🌾': 'buğday', '🐟': 'balık', '🥯': 'simit', '🍵': 'çay bardağı' };
+const esyaAd = g => g?.hedef?.ad || ESYA_AD[g?.hedef?.ikon] || '';
+const sayiSoz = n => cap(SAYI[n] || String(n));
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
 // ---------------- Kurulum ----------------
@@ -229,6 +240,26 @@ function applyProgress() {
   updateGates(true);
 }
 
+// Yıldız sayısı (ve istenirse en yakın kapalı köprünün gereği) söylenir
+async function yildizSoyle(kapiyla) {
+  unlockAll();
+  const n = starCount();
+  await speak(`${sayiSoz(n)} yıldızın var.`);
+  if (!kapiyla) return;
+  let g = null, bd = Infinity;
+  for (const x of W.gates) { if (x.open) continue; const d = Math.hypot(body.pos.x - x.x, body.pos.z - x.z); if (d < bd) { bd = d; g = x; } }
+  if (g) await speak(`Köprü için ${SAYI[g.need] || g.need} yıldız lazım.`);
+}
+// "Ne yapmalıyım?": şimdiki hedef + yıldız sayısı
+async function yardimSoyle() {
+  unlockAll();
+  if (!inGame || busy) return;
+  lastProgress = time;
+  const t = guideTarget();
+  if (t) await speak(guideInfo(t).text);
+  await yildizSoyle(false);
+}
+
 // ---------------- Yol gösterici ok ----------------
 // Çocuk bir süre ilerleyemezse ayının önünde en yakın hedefi gösteren sarı ok belirir.
 let guide = null;
@@ -253,15 +284,38 @@ function guideTarget() {
     W.keys.filter(k => ok.has(k.region) && !k.taken),
   ];
   for (const l of lists) if (l.length) return near(l);
-  return null;
+  // Erişilebilir yerde iş kalmadı: kapalı köprüye yönlendir
+  return near(W.gates.filter(g => !g.open && (ok.has(g.from) || ok.has(g.to)))) || null;
 }
+// Okun gösterdiği hedef için sesli ipucu: {key, text}
+function guideInfo(t) {
+  if (!t) return { key: '', text: '' };
+  if (t.lid) { const a = regionById(t.region).anahtarAd; return { key: 'sandik', text: `${cap(a)} anahtarı ${a} sandığa götür!` }; }
+  if (t.def) {
+    if (t.active?.done) return { key: 'bekler' + t.def.id, text: `${t.def.ad} seni bekliyor! Topladıklarını ona götür.` };
+    return { key: 'npc', text: `${t.def.ad} sana bir şey soracak. Oka doğru git!` };
+  }
+  if (t.sprite) {
+    const a = t.npc.active, left = a ? a.need - a.got : 1, e = esyaAd(a?.gorev);
+    return { key: 'topla' + left, text: e ? `${sayiSoz(left)} ${e} daha bul!` : `${sayiSoz(left)} tane daha bul!` };
+  }
+  if (t.cube) return { key: 'tas', text: 'Bulmaca taşı seni bekliyor. Oka doğru git!' };
+  if (t.door) return { key: 'kapi', text: `Yeni köprüye git! Orada ${SAYI[t.need] || t.need} yıldız lazım.` };
+  return { key: 'anahtar', text: 'Bir anahtar var. Oka doğru git, bul!' };
+}
+let guideKey = '', guideSpoke = -99;
 function updateGuide() {
   if (!guide) guide = makeGuide();
   const idle = time - lastProgress > 12 && !busy && !talkingNpc && !awarding;
   const t = idle ? guideTarget() : null;
   const dx = t ? t.x - body.pos.x : 0, dz = t ? t.z - body.pos.z : 0, d = Math.hypot(dx, dz);
   guide.visible = !!t && d > 3.5;
-  if (!guide.visible) return;
+  if (!guide.visible) { guideKey = ''; return; }
+  // Sesli ipucu: ok belirince bir kez, çocuk durgunsa ~20 sn'de bir tekrar
+  const gi = guideInfo(t);
+  if (!isSpeaking() && (gi.key !== guideKey || time - guideSpoke > 20)) {
+    guideKey = gi.key; guideSpoke = time; speak(gi.text);
+  }
   guide.position.set(body.pos.x + dx / d * 1.5, body.pos.y + 0.35 + Math.abs(Math.sin(time * 4)) * 0.15, body.pos.z + dz / d * 1.5);
   guide.rotation.y = Math.atan2(dx, dz);
 }
@@ -277,6 +331,7 @@ function refreshStones() {
 
 function starCount() { return Object.keys(progress().yildiz || {}).length; }
 
+let kopruAcildi = false;   // yıldızdan sonra "Köprü açıldı!" denecek mi
 function updateGates(silent = false) {
   const n = starCount();
   for (const g of W.gates) {
@@ -289,7 +344,7 @@ function updateGates(silent = false) {
       g.opening = silent ? 1 : 0.0001;
       if (silent) g.door.position.y = -3.2;
       g.sign.visible = false;
-      if (!silent) { sfx.play('open'); speak('Köprü açıldı! Hadi gidelim!'); }
+      if (!silent) { sfx.play('open'); kopruAcildi = true; }
     }
     if (g.open && silent) { g.door.position.y = -3.2; g.sign.visible = false; }
   }
@@ -405,6 +460,8 @@ async function startTask(n, g) {
     const need = g.hedef.adet;
     n.active = { gorev: g, need, got: 0, done: false };
     spawnCollectibles(n, g.hedef.ikon, need);
+    const e = esyaAd(g);
+    await speak(e ? `Etrafta ${SAYI[need] || need} ${e} var. Hepsini bul!` : `Etrafta ${SAYI[need] || need} tane var. Hepsini bul!`);
     return;
   }
   // Bulmaca görevi
@@ -518,6 +575,9 @@ async function awardStar(id, at) {
       lastMsg = m;
       await speak(`${m.kimden ? m.kimden + ' diyor ki: ' : ''}${m.metin}`, { key: `mesaj:${m.id}` });
     }
+    // Sonraki adım
+    await speak(kopruAcildi ? 'Köprü açıldı! Hadi gidelim!' : 'Yeni bir görev için ünlemli arkadaşları bul!');
+    kopruAcildi = false;
   } finally {
     awarding = false;         // hata olsa bile etkileşim kilidi açılır
     updateGates();
@@ -607,11 +667,12 @@ function animateFriends(dt) {
 function bump(id) { const e = $(id); e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
 
 function sayOnce(key, text, cooldown = 6) {
-  const t = announced.get(key) || -99;
-  if (time - t < cooldown) return;
+  if (announced.has(key) && time - announced.get(key) < cooldown) return;
+  if (isSpeaking()) return;          // konuşma sürerken kesme; sonraki karede yeniden dener
   announced.set(key, time);
   speak(text);
 }
+const BIR_KEZ = 1e9;
 
 // ---------------- Döngü ----------------
 const clock = new THREE.Clock();
@@ -787,7 +848,7 @@ function gameplay(dt) {
       sfx.play('pop');
       if (a.got >= a.need) {
         a.done = true; refreshMarkers();
-        speak(`${cap(SAYI[a.got] || String(a.got))}! Hepsini buldun! Şimdi geri götür.`);
+        speak(a.npc.def.adYonelme ? `Hepsini buldun! Şimdi ${a.npc.def.adYonelme} geri götür.` : 'Hepsini buldun! Şimdi geri götür.');
       } else speak(cap(SAYI[a.got] || String(a.got)) + '!');
     }
   }
@@ -805,6 +866,17 @@ function gameplay(dt) {
       sayOnce('kapi-' + g.x + g.z, `Bu kapı için ${SAYI[g.need] || g.need} yıldız lazım. Şimdi ${SAYI[n] || n} yıldızın var.`, 12);
     }
   }
+  // Yakınlık cümleleri (nesne başına oturumda bir kez)
+  if (!busy && !talkingNpc && !awarding) {
+    const pr2 = progress();
+    for (const n of npcs) {
+      if (n.marker.userData.e === '❗' && Math.hypot(p.x - n.x, p.z - n.z) < 3.8) sayOnce('yak-npc-' + n.def.id, `${n.def.ad}! Konuşmak için düğmeye bas.`, BIR_KEZ);
+    }
+    for (const s of W.stones) {
+      if (!pr2.yildiz?.[s.id] && Math.hypot(p.x - s.x, p.z - s.z) < 3.8) sayOnce('yak-tas-' + s.id, 'Bulmaca taşı! Düğmeye bas, birlikte çözelim.', BIR_KEZ);
+    }
+    if (W.wardrobe && Math.hypot(p.x - W.wardrobe.x, p.z - W.wardrobe.z) < 3.8) sayOnce('yak-dolap', 'Kıyafet dolabı! Düğmeye bas, kıyafetini değiştir.', BIR_KEZ);
+  }
   // Bölge değişimi
   const r = W.regionAt(p.x, p.z);
   if (r && r !== currentRegion) {
@@ -812,8 +884,9 @@ function gameplay(dt) {
     sfx.music(r.music);
     const el = document.createElement('div'); el.className = 'bolge-adi'; el.textContent = r.emoji;
     document.body.appendChild(el); setTimeout(() => el.remove(), 2700);
-    sayOnce('bolge-' + r.id, r.ad + '!', 20);
   }
+  // Ada tanıtımı: başka konuşma sürüyorsa bitince söylenir
+  if (currentRegion && !announced.has('bolge-' + currentRegion.id)) sayOnce('bolge-' + currentRegion.id, BOLGE_GIRIS[currentRegion.id] || currentRegion.ad + '!', BIR_KEZ);
   // Etkileşim düğmesi
   const it = (talkingNpc || awarding) ? null : nearestInteractable();
   input.showAction(it ? it.icon : null);
@@ -870,6 +943,8 @@ async function boot() {
   renderProfiles();
   $('oyna').onclick = startGame;
   $('ev-dugme').onclick = backToTitle;
+  $('yardim-dugme').addEventListener('pointerdown', e => { e.preventDefault(); yardimSoyle(); });
+  $('yildiz-sayac').addEventListener('pointerdown', e => { e.preventDefault(); yildizSoyle(true); });
   addEventListener('pointerdown', () => { unlockAll(); if (!inGame) sfx.music('baslik'); }, { once: true });
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeak(); });
   // Arka planda dönen dünya: başlık ekranının arkasında

@@ -80,6 +80,7 @@ function oturumAc(def, tur, ctx, kapanis) {
   let ro = null;
   let soruJeton = 0;
   let sonDinle = 0;
+  let tekrarSay = 0, tekrarId = 0;   // cevapsızsa soruyu ~8 sn sonra en çok 3 kez tekrarla
 
   // — DOM iskeleti —
   const kok = el('div', 'bm-kok');
@@ -133,6 +134,7 @@ function oturumAc(def, tur, ctx, kapanis) {
     const calis = (ev) => {
       if (st.bitti) return;
       if (!her && kilitliMi()) return;
+      if (h !== dinleBtn && h !== kapatBtn) tekrarKur();   // çocuk etkin: bekleme süresi yeniden başlar
       try { fn(ev); } catch (e) { console.error('[bulmaca]', e); }
     };
     h.addEventListener('pointerdown', (ev) => {
@@ -341,12 +343,21 @@ function oturumAc(def, tur, ctx, kapanis) {
   }
 
   // — Soru —
+  function tekrarKur() {
+    clearTimeout(tekrarId);
+    if (tekrarSay >= 3 || st.bitti || st.cozuldu) return;
+    tekrarId = setTimeout(() => {
+      if (st.bitti || st.cozuldu) return;
+      tekrarSay++;
+      soruOku();
+    }, 8000);
+  }
   function soruOku() {
     if (!def.soru) return;
     const j = ++soruJeton;
     dinleBtn.classList.add('bm-konusuyor');
     ses.speak(String(def.soru), def.id != null ? { key: `bulmaca:${def.id}` } : {})
-      .then(() => { if (j === soruJeton) dinleBtn.classList.remove('bm-konusuyor'); });
+      .then(() => { if (j === soruJeton) { dinleBtn.classList.remove('bm-konusuyor'); tekrarKur(); } });
   }
 
   // — Kapanış —
@@ -355,6 +366,7 @@ function oturumAc(def, tur, ctx, kapanis) {
   function bitir(cozuldu) {
     if (st.bitti) return;
     st.bitti = true;
+    clearTimeout(tekrarId);
     if (!cozuldu) ses.durdur();
     for (const id of zamanlar) clearTimeout(id);
     zamanlar.clear();

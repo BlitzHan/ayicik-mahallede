@@ -1,39 +1,39 @@
 {
  "surum": 1,
  "npcler": [
-  {"id":"anne","ad":"Anne Ayı","alan":"aile","konusmalar":["Merhaba yavrum! Seni çok seviyorum.","Bugün hava çok güzel, haydi oynayalım!","Çiçeklerimi sulamama yardım eder misin?","Aferin sana, ne kadar yardımseversin!"]},
-  {"id":"baba","ad":"Baba Ayı","alan":"aile","konusmalar":["Selam şampiyon! Gel bakalım buraya.","Yıldızları toplarsan yeni köprüler açılır!","Zıpla, zıpla! Sen çok cesursun.","Seninle çok gurur duyuyorum!"]},
-  {"id":"nine","ad":"Nine Ayı","alan":"aile","konusmalar":["Hoş geldin kuzum! Seni çok özledim.","Bahçede elmalar olgunlaştı, toplar mısın?","Sana sıcacık kurabiye yaptım.","Maşallah, ne kadar da büyümüşsün!"]},
-  {"id":"kuzen","ad":"Kuzen Ayı","alan":"aile","konusmalar":["Merhaba kuzen! Hadi birlikte oynayalım!","Saklambaç oynayalım mı? Sen ebesin!","Birlikte oynamak çok eğlenceli.","Sen benim en iyi arkadaşımsın!"]},
+  {"id":"anne","ad":"Anne Ayı","adYonelme":"Anne Ayı'ya","alan":"aile","konusmalar":["Merhaba yavrum! Seni çok seviyorum.","Bugün hava çok güzel, haydi oynayalım!","Çiçeklerimi sulamama yardım eder misin?","Aferin sana, ne kadar yardımseversin!"]},
+  {"id":"baba","ad":"Baba Ayı","adYonelme":"Baba Ayı'ya","alan":"aile","konusmalar":["Selam şampiyon! Gel bakalım buraya.","Yıldızları toplarsan yeni köprüler açılır!","Zıpla, zıpla! Sen çok cesursun.","Seninle çok gurur duyuyorum!"]},
+  {"id":"nine","ad":"Nine Ayı","adYonelme":"Nine Ayı'ya","alan":"aile","konusmalar":["Hoş geldin kuzum! Seni çok özledim.","Bahçede elmalar olgunlaştı, toplar mısın?","Sana sıcacık kurabiye yaptım.","Maşallah, ne kadar da büyümüşsün!"]},
+  {"id":"kuzen","ad":"Kuzen Ayı","adYonelme":"Kuzen Ayı'ya","alan":"aile","konusmalar":["Merhaba kuzen! Hadi birlikte oynayalım!","Saklambaç oynayalım mı? Sen ebesin!","Birlikte oynamak çok eğlenceli.","Sen benim en iyi arkadaşımsın!"]},
 
-  {"id":"baykus-ogretmen","ad":"Baykuş Öğretmen","alan":"okul","konusmalar":["Günaydın minik öğrencim! Hoş geldin.","Bugün renkleri ve sayıları öğreneceğiz.","Red kırmızı, blue mavi demek!","Bir, iki, üç... One, two, three!","Harikasın, çok akıllı bir öğrencisin!"]},
-  {"id":"panda","ad":"Panda Arkadaş","alan":"okul","konusmalar":["Selam! Benimle top oynar mısın?","En sevdiğin renk hangisi? Benimki yeşil!","Bambu çok lezzetli, biliyor musun?","Arkadaşlık çok güzel bir şey!"]},
-  {"id":"tavsan","ad":"Tavşan Arkadaş","alan":"okul","konusmalar":["Merhaba! Ben çok hızlı zıplarım!","Havuç benim en sevdiğim yemek.","Hadi bakalım, kim daha yükseğe zıplayacak?","Sen de harika zıplıyorsun!"]},
+  {"id":"baykus-ogretmen","ad":"Baykuş Öğretmen","adYonelme":"Baykuş Öğretmen'e","alan":"okul","konusmalar":["Günaydın minik öğrencim! Hoş geldin.","Bugün renkleri ve sayıları öğreneceğiz.","Red kırmızı, blue mavi demek!","Bir, iki, üç... One, two, three!","Harikasın, çok akıllı bir öğrencisin!"]},
+  {"id":"panda","ad":"Panda Arkadaş","adYonelme":"Panda Arkadaş'a","alan":"okul","konusmalar":["Selam! Benimle top oynar mısın?","En sevdiğin renk hangisi? Benimki yeşil!","Bambu çok lezzetli, biliyor musun?","Arkadaşlık çok güzel bir şey!"]},
+  {"id":"tavsan","ad":"Tavşan Arkadaş","adYonelme":"Tavşan Arkadaş'a","alan":"okul","konusmalar":["Merhaba! Ben çok hızlı zıplarım!","Havuç benim en sevdiğim yemek.","Hadi bakalım, kim daha yükseğe zıplayacak?","Sen de harika zıplıyorsun!"]},
 
-  {"id":"dede","ad":"Dede Ayı","alan":"din","konusmalar":["Selamün aleyküm evladım! Hoş geldin.","Yemekten önce Bismillah deriz.","Yemekten sonra Elhamdülillah deriz.","Camiye girerken ayakkabılarımızı çıkarırız.","Hayvanlara iyi davranmak çok güzeldir."]},
-  {"id":"tekir","ad":"Tekir Kedi","alan":"din","konusmalar":["Miyav! Merhaba, ben Tekir!","Cami bahçesi benim sıcak yuvam.","Beni sevdiğin için teşekkür ederim.","Herkes bana çok iyi davranıyor, miyav!"]},
-  {"id":"pitpit","ad":"Güvercin Pıtpıt","alan":"din","konusmalar":["Gu gu! Selam, ben Pıtpıt!","Kanatlarımla gökyüzünde uçarım.","Bize buğday verirsen çok seviniriz.","Paylaşmak ne güzel, teşekkürler!"]},
+  {"id":"dede","ad":"Dede Ayı","adYonelme":"Dede Ayı'ya","alan":"din","konusmalar":["Selamün aleyküm evladım! Hoş geldin.","Yemekten önce Bismillah deriz.","Yemekten sonra Elhamdülillah deriz.","Camiye girerken ayakkabılarımızı çıkarırız.","Hayvanlara iyi davranmak çok güzeldir."]},
+  {"id":"tekir","ad":"Tekir Kedi","adYonelme":"Tekir Kedi'ye","alan":"din","konusmalar":["Miyav! Merhaba, ben Tekir!","Cami bahçesi benim sıcak yuvam.","Beni sevdiğin için teşekkür ederim.","Herkes bana çok iyi davranıyor, miyav!"]},
+  {"id":"pitpit","ad":"Güvercin Pıtpıt","adYonelme":"Güvercin Pıtpıt'a","alan":"din","konusmalar":["Gu gu! Selam, ben Pıtpıt!","Kanatlarımla gökyüzünde uçarım.","Bize buğday verirsen çok seviniriz.","Paylaşmak ne güzel, teşekkürler!"]},
 
-  {"id":"simitci","ad":"Simitçi Ayı","alan":"kultur","konusmalar":["Hoş geldin! Sıcak simit, taze simit!","Simitlerim susamlı ve çıtır çıtır.","Simit ile çay çok yakışır!","Afiyet olsun, güzel çocuk!"]},
-  {"id":"cayci","ad":"Çaycı Ayı","alan":"kultur","konusmalar":["Merhaba! Çay bahçeme hoş geldin.","Sana sıcacık bir elma çayı yaptım!","Nasreddin Hoca'yı bilir misin? Çok komikmiş!","Keloğlan masalı da çok güzeldir.","Buradan vapurları seyretmek çok güzel."]},
-  {"id":"marti","ad":"Martı Mavi","alan":"kultur","konusmalar":["Gak gak! Merhaba, ben Martı Mavi!","Vapurların peşinden uçmayı çok severim.","Şuradaki kule Galata Kulesi, ne güzel!","Denizin ortasında Kız Kulesi var.","Balık benim en sevdiğim yemek!"]}
+  {"id":"simitci","ad":"Simitçi Ayı","adYonelme":"Simitçi Ayı'ya","alan":"kultur","konusmalar":["Hoş geldin! Sıcak simit, taze simit!","Simitlerim susamlı ve çıtır çıtır.","Simit ile çay çok yakışır!","Afiyet olsun, güzel çocuk!"]},
+  {"id":"cayci","ad":"Çaycı Ayı","adYonelme":"Çaycı Ayı'ya","alan":"kultur","konusmalar":["Merhaba! Çay bahçeme hoş geldin.","Sana sıcacık bir elma çayı yaptım!","Nasreddin Hoca'yı bilir misin? Çok komikmiş!","Keloğlan masalı da çok güzeldir.","Buradan vapurları seyretmek çok güzel."]},
+  {"id":"marti","ad":"Martı Mavi","adYonelme":"Martı Mavi'ye","alan":"kultur","konusmalar":["Gak gak! Merhaba, ben Martı Mavi!","Vapurların peşinden uçmayı çok severim.","Şuradaki kule Galata Kulesi, ne güzel!","Denizin ortasında Kız Kulesi var.","Balık benim en sevdiğim yemek!"]}
  ],
 
  "gorevler": [
-  {"id":"g-elma","alan":"aile","npc":"nine","ana":true,"anlatim":"Kuzum, bahçeden beş elma toplar mısın?","tur":"topla","hedef":{"ikon":"🍎","adet":5},"odul":"Teşekkürler kuzum! Elmalar çok güzel!"},
-  {"id":"g-cicek","alan":"aile","npc":"anne","ana":false,"anlatim":"Yavrum, bana dört çiçek getirir misin?","tur":"topla","hedef":{"ikon":"🌷","adet":4},"odul":"Ne güzel çiçekler! Teşekkür ederim!"},
+  {"id":"g-elma","alan":"aile","npc":"nine","ana":true,"anlatim":"Kuzum, bahçeden beş elma toplar mısın?","tur":"topla","hedef":{"ad":"elma","ikon":"🍎","adet":5},"odul":"Teşekkürler kuzum! Elmalar çok güzel!"},
+  {"id":"g-cicek","alan":"aile","npc":"anne","ana":false,"anlatim":"Yavrum, bana dört çiçek getirir misin?","tur":"topla","hedef":{"ad":"çiçek","ikon":"🌷","adet":4},"odul":"Ne güzel çiçekler! Teşekkür ederim!"},
   {"id":"g-sabah","alan":"aile","npc":"baba","ana":false,"anlatim":"Sabah neler yaparız? Bana sırayla gösterir misin?","tur":"bulmaca","hedef":{"bulmaca":"aile-sirala-sabah"},"odul":"Aferin şampiyon! Güne harika başladın!"},
 
-  {"id":"g-kalem","alan":"okul","npc":"baykus-ogretmen","ana":true,"anlatim":"Kalemlerim dağıldı! Beş kalem bulur musun?","tur":"topla","hedef":{"ikon":"✏️","adet":5},"odul":"Teşekkürler! Sen harika bir öğrencisin!"},
-  {"id":"g-top","alan":"okul","npc":"panda","ana":false,"anlatim":"Toplarım kaçtı! Üç top bulur musun?","tur":"topla","hedef":{"ikon":"⚽","adet":3},"odul":"Yaşasın! Hadi şimdi birlikte oynayalım!"},
+  {"id":"g-kalem","alan":"okul","npc":"baykus-ogretmen","ana":true,"anlatim":"Kalemlerim dağıldı! Beş kalem bulur musun?","tur":"topla","hedef":{"ad":"kalem","ikon":"✏️","adet":5},"odul":"Teşekkürler! Sen harika bir öğrencisin!"},
+  {"id":"g-top","alan":"okul","npc":"panda","ana":false,"anlatim":"Toplarım kaçtı! Üç top bulur musun?","tur":"topla","hedef":{"ad":"top","ikon":"⚽","adet":3},"odul":"Yaşasın! Hadi şimdi birlikte oynayalım!"},
   {"id":"g-kirmizi","alan":"okul","npc":"tavsan","ana":false,"anlatim":"Kırmızı balonum hangisi? Bulur musun?","tur":"bulmaca","hedef":{"bulmaca":"okul-sec-kirmizi"},"odul":"Buldun! Sen bir renk ustasısın!"},
 
-  {"id":"g-tohum","alan":"din","npc":"dede","ana":true,"anlatim":"Güvercinler acıkmış. Dört buğday bulur musun?","tur":"topla","hedef":{"ikon":"🌾","adet":4},"odul":"Elhamdülillah! Güvercinler çok mutlu oldu."},
-  {"id":"g-kedi","alan":"din","npc":"tekir","ana":false,"anlatim":"Miyav! Karnım aç. Üç balık bulur musun?","tur":"topla","hedef":{"ikon":"🐟","adet":3},"odul":"Miyav! Teşekkürler, sen çok merhametlisin!"},
+  {"id":"g-tohum","alan":"din","npc":"dede","ana":true,"anlatim":"Güvercinler acıkmış. Dört buğday bulur musun?","tur":"topla","hedef":{"ad":"buğday","ikon":"🌾","adet":4},"odul":"Elhamdülillah! Güvercinler çok mutlu oldu."},
+  {"id":"g-kedi","alan":"din","npc":"tekir","ana":false,"anlatim":"Miyav! Karnım aç. Üç balık bulur musun?","tur":"topla","hedef":{"ad":"balık","ikon":"🐟","adet":3},"odul":"Miyav! Teşekkürler, sen çok merhametlisin!"},
   {"id":"g-sofra","alan":"din","npc":"dede","ana":false,"anlatim":"Sofraya oturduk. Sırayla ne yaparız, gösterir misin?","tur":"bulmaca","hedef":{"bulmaca":"din-sirala-yemek"},"odul":"Maşallah! Sofra adabını çok güzel biliyorsun."},
 
-  {"id":"g-simit","alan":"kultur","npc":"simitci","ana":true,"anlatim":"Rüzgar simitlerimi uçurdu! Beş simit toplar mısın?","tur":"topla","hedef":{"ikon":"🥯","adet":5},"odul":"Eline sağlık! Bir simit de sana!"},
-  {"id":"g-cay","alan":"kultur","npc":"cayci","ana":false,"anlatim":"Çay bardaklarım dağıldı. Üç tane bulur musun?","tur":"topla","hedef":{"ikon":"🍵","adet":3},"odul":"Çok teşekkürler! Sen çok yardımseversin!"},
+  {"id":"g-simit","alan":"kultur","npc":"simitci","ana":true,"anlatim":"Rüzgar simitlerimi uçurdu! Beş simit toplar mısın?","tur":"topla","hedef":{"ad":"simit","ikon":"🥯","adet":5},"odul":"Eline sağlık! Bir simit de sana!"},
+  {"id":"g-cay","alan":"kultur","npc":"cayci","ana":false,"anlatim":"Çay bardaklarım dağıldı. Üç tane bulur musun?","tur":"topla","hedef":{"ad":"çay bardağı","ikon":"🍵","adet":3},"odul":"Çok teşekkürler! Sen çok yardımseversin!"},
   {"id":"g-vapur","alan":"kultur","npc":"marti","ana":false,"anlatim":"Gak gak! Vapuru bulmama yardım eder misin?","tur":"bulmaca","hedef":{"bulmaca":"kultur-sec-vapur"},"odul":"Gak gak! Vapurun peşinden uçuyorum, teşekkürler!"}
  ],
 

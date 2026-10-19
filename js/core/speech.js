@@ -100,7 +100,11 @@ export function unlockAudio() {
   }
 }
 
+let konusuyor = false;
+export function isSpeaking() { return konusuyor; }
+
 export function stopSpeak() {
+  konusuyor = false;
   try { el.pause(); } catch (_) {}
   const b = bekleyen; bekleyen = null;
   if (b) b();
@@ -188,9 +192,10 @@ function caption(text) {
 export async function speak(text, { key, voice, alt } = {}) {
   const my = ++seq;
   stopSpeak();
+  konusuyor = true;
   caption(text);
   let ok = await playClip(key, my);
   if (!ok && my === seq) ok = await playGenerated(text, voice, alt, my);
   if (!ok && my === seq) await tts(text);
-  if (my === seq) caption('');
+  if (my === seq) { caption(''); konusuyor = false; }
 }
