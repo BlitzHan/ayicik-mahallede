@@ -1,0 +1,205 @@
+/* Ayıcık Mahallede — gardırop (şapka ve gömlek seçimi). Tüm sınıflar "gd-" önekli.
+   bulmaca.css ile aynı görünüm: gökyüzü degradesi, yuvarlak beyaz düğmeler, yumuşak gölge.
+   Yatay ekran: panel sağda, sahne (ayı) solda görünür. Çocuk okumaz: yazı yok. js/ui/gardrop.js */
+
+.gd-kok {
+  --gd-btn: clamp(88px, 14vmin, 112px);
+  --gd-bosluk: 12px;
+  --gd-golge: 0 5px 0 rgba(40, 70, 130, .13), 0 10px 22px rgba(40, 70, 130, .2);
+  --gd-yesil: #43c463;
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  box-sizing: border-box;
+  padding:
+    max(10px, env(safe-area-inset-top, 0px))
+    max(10px, env(safe-area-inset-right, 0px))
+    max(10px, env(safe-area-inset-bottom, 0px))
+    max(10px, env(safe-area-inset-left, 0px));
+  color: #2b3a55;
+  font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  outline: none;
+  animation: gd-belir .25s ease-out backwards;
+}
+.gd-kok *, .gd-kok *::before, .gd-kok *::after { box-sizing: border-box; }
+.gd-kok.gd-kapaniyor { animation: gd-cikis .22s ease-in forwards; }
+.gd-kok.gd-kapaniyor * { pointer-events: none; }
+
+.gd-kok button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.gd-kok button:focus { outline: none; }
+.gd-kok button:focus-visible { outline: 4px solid #1e88e5; outline-offset: 4px; }
+
+/* ---------- Panel (sağda) ---------- */
+.gd-tepsi {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(54vw, calc(var(--gd-btn) * 4 + var(--gd-bosluk) * 3 + 36px));   /* en çok 4 sütun */
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 14px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 8% 94%, rgba(255, 255, 255, .6) 0 8%, transparent 8.3%),
+    radial-gradient(circle at 92% 88%, rgba(255, 255, 255, .5) 0 5%, transparent 5.3%),
+    radial-gradient(circle at 80% 6%, rgba(255, 233, 140, .55) 0 7%, transparent 7.3%),
+    linear-gradient(165deg, #9fe3ff 0%, #d4f4ff 50%, #fff3c9 100%);
+  box-shadow: 0 8px 0 rgba(40, 70, 130, .12), 0 16px 34px rgba(40, 70, 130, .28);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  animation: gd-kay .34s cubic-bezier(.2, .9, .3, 1.15) backwards;
+}
+.gd-tepsi::-webkit-scrollbar { display: none; }
+
+.gd-izgara {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--gd-btn));
+  justify-content: center;
+  gap: var(--gd-bosluk);
+  padding: 8px 0;   /* seçili halka ve yıldız kesilmesin */
+}
+.gd-ayrac {
+  flex: 0 0 auto;
+  height: 0;
+  border-top: 5px dashed rgba(126, 87, 194, .35);
+  border-radius: 3px;
+  margin: 0 10%;
+}
+
+/* ---------- Yuvarlak seçim düğmeleri ---------- */
+.gd-kok .gd-sec {
+  position: relative;
+  width: var(--gd-btn);
+  height: var(--gd-btn);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  box-shadow: var(--gd-golge);
+  transition: transform .12s ease, box-shadow .2s ease;
+}
+.gd-sec .gd-emoji {
+  position: relative;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+  font-size: calc(var(--gd-btn) * .54);
+  line-height: 1;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .12));
+  pointer-events: none;
+}
+.gd-sec img {
+  width: 86%;
+  height: 86%;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #fff, 0 2px 6px rgba(0, 0, 0, .18);
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+/* "Gömleksiz": soluk gömlek + üstünde yasak işareti */
+.gd-sec.gd-yok > .gd-emoji { grid-area: 1 / 1; }
+.gd-sec .gd-soluk { opacity: .38; filter: grayscale(.6); }
+.gd-sec .gd-ust { font-size: calc(var(--gd-btn) * .62); }
+
+.gd-kok .gd-secili {
+  box-shadow: 0 0 0 7px var(--gd-yesil), 0 0 28px 8px rgba(67, 196, 99, .45), var(--gd-golge);
+}
+.gd-secili::after {
+  content: "⭐";
+  position: absolute;
+  top: -10%;
+  right: -8%;
+  font-size: calc(var(--gd-btn) * .3);
+  line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  pointer-events: none;
+  animation: gd-dolu .4s cubic-bezier(.2, .9, .3, 1.4) backwards;
+}
+.gd-kok .gd-bas { transform: scale(.92); }
+.gd-kok .gd-zipla { animation: gd-zipla .55s cubic-bezier(.3, .8, .4, 1.3); }
+
+/* ---------- Büyük kapat düğmesi (solda üstte) ---------- */
+.gd-kok .gd-kapat {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top, 0px));
+  left: max(10px, env(safe-area-inset-left, 0px));
+  z-index: 3;
+  width: var(--gd-btn);
+  height: var(--gd-btn);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #6b7a99;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: calc(var(--gd-btn) * .44);
+  font-weight: 900;
+  box-shadow: var(--gd-golge);
+  transition: transform .12s ease;
+}
+
+/* Dik tutuşta (oyun yatay ister; yine de bozulmasın): panel altta */
+@media (orientation: portrait) {
+  .gd-kok { align-items: flex-end; justify-content: stretch; }
+  .gd-tepsi { width: 100%; max-height: 58%; }
+}
+/* Çok alçak yatay ekranlar (adres çubuklu 640×320) */
+@media (max-height: 340px) {
+  .gd-tepsi { padding: 12px 10px; gap: 8px; }
+}
+
+/* Masaüstünde fareyle gezinme ipucu */
+@media (hover: hover) and (pointer: fine) {
+  .gd-kok .gd-sec:hover { filter: brightness(1.04); }
+  .gd-kok .gd-kapat:hover { transform: scale(1.04); }
+}
+
+/* ---------- Animasyonlar ---------- */
+@keyframes gd-belir { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gd-cikis { from { opacity: 1; } to { opacity: 0; } }
+@keyframes gd-kay { from { transform: translateX(36px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes gd-zipla {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.18) translateY(-4px); }
+  65% { transform: scale(.96); }
+  100% { transform: scale(1); }
+}
+@keyframes gd-dolu { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* ---------- Az hareket tercihi ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .gd-kok, .gd-tepsi, .gd-kok.gd-kapaniyor { animation-duration: .01s; }
+  .gd-tepsi { animation: none; }
+  .gd-kok .gd-zipla, .gd-secili::after { animation: none; }
+  .gd-kok .gd-sec, .gd-kok .gd-kapat { transition: none; }
+  .gd-kok .gd-bas { transform: none; filter: brightness(.92); }
+}

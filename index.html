@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#7ec8f0">
+  <title>Ayıcık Mahallede</title>
+  <meta name="apple-mobile-web-app-title" content="Ayıcık">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="ikon/ikon-192.png">
+  <link rel="stylesheet" href="css/oyun.css">
+  <link rel="stylesheet" href="css/bulmaca.css">
+  <link rel="stylesheet" href="css/panel.css">
+  <link rel="stylesheet" href="css/gardrop.css">
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="sahne"></canvas>
+
+  <!-- Oyun içi göstergeler -->
+  <div id="hud" hidden>
+    <div class="sayac" id="altin-sayac"><span class="ikon">🪙</span><span id="altin">0</span></div>
+    <div class="sayac" id="yildiz-sayac"><span class="ikon">⭐</span><span id="yildiz">0</span></div>
+    <button id="ev-dugme" class="kose-dugme" aria-label="Başlık ekranı">🏠</button>
+  </div>
+
+  <!-- Dokunmatik kontroller -->
+  <div id="kontroller" hidden>
+    <div id="joystick-alan"></div>
+    <div id="joystick"><div id="joystick-top"></div></div>
+    <button id="ziplama" aria-label="Zıpla">⬆️</button>
+    <button id="eylem" aria-label="Konuş" hidden>💬</button>
+  </div>
+
+  <!-- Başlık ekranı -->
+  <div id="baslik">
+    <div class="baslik-gok"></div>
+    <h1 class="logo">🐻<span>Ayıcık Mahallede</span></h1>
+    <div id="profiller"></div>
+    <button id="oyna" aria-label="Oyna">▶</button>
+    <button id="ayar" class="kose-dugme" aria-label="Ebeveyn paneli (basılı tutun)">⚙️<svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="16"/></svg></button>
+    <div id="ilk-kurulum" hidden>
+      <div class="kart">
+        <h2>Ebeveyn: çocuğu ekleyin</h2>
+        <label>Adı <input id="ilk-ad" maxlength="16" autocomplete="off" placeholder="Örn. Yusuf"></label>
+        <div class="renkler" id="ilk-renkler"></div>
+        <button id="ilk-kaydet">Kaydet</button>
+        <p class="not">Fotoğraf, kendi sesiniz, aile mesajları ve bulmacalar: ⚙️ düğmesine 2 saniye basılı tutun.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="yon-uyari" aria-hidden="true">📱↻</div>
+  <div id="altyazi"></div>
+  <div id="overlay"></div>
+  <div id="yukleniyor">🐻</div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
